@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planet Crafter V2</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ===== CANVAS 3D ===== -->
+  <canvas id="game-canvas"></canvas>
+
+  <!-- ===== HUD TERRAFORMATION ===== -->
+  <div id="hud">
+    <div id="hud-title">🌍 TERRAFORMATION</div>
+
+    <!-- Ti Total -->
+    <div id="hud-ti-row">
+      <span id="hud-ti-label">Index Ti :</span>
+      <span id="hud-ti">0 Ti</span>
+      <span id="hud-ti-rate" class="hud-rate">0 Ti/s</span>
+    </div>
+
+    <!-- Barres de paramètres -->
+    <div class="hud-bar-row">
+      <span class="hud-icon">💨</span>
+      <span class="hud-label">Oxygène</span>
+      <div class="hud-bar-bg">
+        <div class="hud-bar oxygen-bar" id="bar-oxygen"></div>
+      </div>
+      <span class="hud-value" id="val-oxygen">0%</span>
+    </div>
+
+    <div class="hud-bar-row">
+      <span class="hud-icon">🌡️</span>
+      <span class="hud-label">Chaleur</span>
+      <div class="hud-bar-bg">
+        <div class="hud-bar heat-bar" id="bar-heat"></div>
+      </div>
+      <span class="hud-value" id="val-heat">0%</span>
+    </div>
+
+    <div class="hud-bar-row">
+      <span class="hud-icon">🌀</span>
+      <span class="hud-label">Pression</span>
+      <div class="hud-bar-bg">
+        <div class="hud-bar pressure-bar" id="bar-pressure"></div>
+      </div>
+      <span class="hud-value" id="val-pressure">0%</span>
+    </div>
+
+    <div class="hud-bar-row">
+      <span class="hud-icon">🌿</span>
+      <span class="hud-label">Biomasse</span>
+      <div class="hud-bar-bg">
+        <div class="hud-bar biomass-bar" id="bar-biomass"></div>
+      </div>
+      <span class="hud-value" id="val-biomass">0%</span>
+    </div>
+
+    <!-- Stade actuel -->
+    <div id="hud-stage-block">
+      <div id="hud-stage">Stade : <span id="stage-name">💀 Planète morte</span></div>
+      <div id="stage-desc">La planète est totalement stérile.</div>
+      <div id="hud-stage-progress">
+        <div id="stage-progress-track">
+          <div id="stage-progress-bar"></div>
+        </div>
+        <div id="stage-next"></div>
+      </div>
+    </div>
+
+    <!-- Machines -->
+    <div id="hud-machines-row">
+      ⚙️ <span id="hud-machines">0 machine(s)</span>
+    </div>
+  </div>
+
+  <!-- ===== INVENTAIRE (panneau latéral) ===== -->
+  <div id="inventory">
+    <div id="inv-header">
+      <div id="inv-title">🎒 INVENTAIRE</div>
+      <button id="inv-close" onclick="toggleInventory()">✕</button>
+    </div>
+    <div id="inv-grid">
+      <div class="inv-empty">Explorez pour collecter des ressources</div>
+    </div>
+  </div>
+
+  <!-- ===== PANNEAU CRAFT / MACHINES ===== -->
+  <div id="craft-panel" class="hidden">
+    <div id="craft-header">
+      <div id="craft-title">🔧 CONSTRUIRE UNE MACHINE</div>
+      <button id="craft-close" onclick="toggleCraft()">✕ FERMER</button>
+    </div>
+    <div id="craft-list">
+      <!-- Rempli dynamiquement par terraform.js -->
+    </div>
+  </div>
+
+  <!-- ===== NOTIFICATION ===== -->
+  <div id="notif"></div>
+
+  <!-- ===== MIRE ===== -->
+  <div id="crosshair">+</div>
+
+  <!-- ===== HINT TOUCHE E ===== -->
+  <div id="interact-hint" class="hidden">E — Ramasser</div>
+
+  <!-- ===== BARRE DU BAS ===== -->
+  <div id="bottom-bar">
+    <span>ZQSD — Se déplacer</span>
+    <span>Souris — Regarder</span>
+    <span>E — Ramasser</span>
+    <span>B — Construire</span>
+    <span>I — Inventaire</span>
+    <span>Échap — Pause</span>
+  </div>
+
+  <!-- ===== OVERLAY DÉMARRAGE ===== -->
+  <div id="overlay" class="active">
+    <div id="overlay-content">
+      <div id="overlay-logo">🌍</div>
+      <h1>THE PLANET CRAFTER</h1>
+      <p class="overlay-sub">Terraformez une planète hostile</p>
+      <div id="overlay-steps">
+        <div class="step">💨 Produire de l'oxygène</div>
+        <div class="step">🌡️ Réchauffer la surface</div>
+        <div class="step">🌀 Augmenter la pression</div>
+        <div class="step">🌿 Faire naître la vie</div>
+        <div class="step">🌊 Former des océans</div>
+        <div class="step">🌲 Planter des forêts</div>
+        <div class="step">🌍 Terraformation complète</div>
+      </div>
+      <div id="overlay-stages-preview">
+        <div class="stage-preview">📊 15 stades de terraformation</div>
+        <div class="stage-preview">⛏️ 17 types de minerais à collecter</div>
+        <div class="stage-preview">🦋 20 variétés de papillons</div>
+        <div class="stage-preview">🐟 15 espèces de poissons</div>
+        <div class="stage-preview">🐸 17 espèces de grenouilles</div>
+      </div>
+      <button id="start-btn">▶ COMMENCER</button>
+      <p class="overlay-version">V2.0 — Planet Crafter</p>
+    </div>
+  </div>
+
+  <!-- ===== BIBLIOTHÈQUES ===== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- Données -->
+  <script src="js/data/items.js"></script>
+  <script src="js/data/stages.js"></script>
+
+  <!-- Systèmes -->
+  <script src="js/terraform.js"></script>
+  <script src="js/terrain.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
