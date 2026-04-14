@@ -19,75 +19,24 @@ const gameState = {
   currentStageNumber: 1,
 };
 
-// ─── Types de machines & leurs effets ──────────────────────
-const MACHINE_DEFS = {
-  'oxygen-pump': {
-    name:        'Pompe à O2',
-    icon:        '💨',
-    tiPerSec:    80,
-    oxygenRate:  0.02,   // % par seconde
-    cost:        { iron: 2, titanium: 1 },
-    effect:      'Produit de l\'oxygène → +80 Ti/s',
-  },
-  'heater': {
-    name:        'Chauffe-sol',
-    icon:        '🌡️',
-    tiPerSec:    80,
-    heatRate:    0.02,
-    cost:        { iron: 3, silicon: 1 },
-    effect:      'Réchauffe la surface → +80 Ti/s',
-  },
-  'atmospheric-press': {
-    name:        'Compresseur',
-    icon:        '🌀',
-    tiPerSec:    80,
-    pressureRate:0.02,
-    cost:        { titanium: 2, silicon: 1 },
-    effect:      'Augmente la pression → +80 Ti/s',
-  },
-  'tree-spreader': {
-    name:        'Semeur de vie',
-    icon:        '🌿',
-    tiPerSec:    120,
-    biomassRate: 0.03,
-    cost:        { iron: 1, silicon: 1, seed_lirma: 2 },
-    effect:      'Répand la végétation → +120 Ti/s',
-  },
-  'solar-panel': {
-    name:        'Panneau solaire',
-    icon:        '⚡',
-    tiPerSec:    40,
-    energyRate:  0.01,
-    cost:        { silicon: 2, aluminum: 1 },
-    effect:      'Génère de l\'énergie → +40 Ti/s',
-  },
-  'biolab-station': {
-    name:        'Station Bio',
-    icon:        '🧪',
-    tiPerSec:    200,
-    biomassRate: 0.05,
-    cost:        { silicon: 2, iron: 2, circuit_board: 1 },
-    effect:      'Cultivre des organismes → +200 Ti/s',
-  },
-  'nuclear-reactor': {
-    name:        'Réacteur nucléaire',
-    icon:        '☢️',
-    tiPerSec:    500,
-    oxygenRate:  0.05,
-    heatRate:    0.05,
-    cost:        { uranium: 2, iron: 4, titanium: 2 },
-    effect:      'Énergie massive → +500 Ti/s',
-  },
-  'atmospheric-condenser': {
-    name:        'Condenseur atmosphérique',
-    icon:        '🌧️',
-    tiPerSec:    300,
-    pressureRate:0.06,
-    oxygenRate:  0.03,
-    cost:        { titanium: 3, cobalt: 2, circuit_board: 1 },
-    effect:      'Condense l\'atmosphère → +300 Ti/s',
-  },
-};
+// ─── Référence vers MACHINES (chargé depuis machines.js) ──────
+// MACHINES est défini dans client/js/data/machines.js
+// On l'alias localement pour la compatibilité du code existant
+// Les machines utilisables depuis le panneau craft sont filtrées
+// par STARTER_MACHINES et par les blueprints débloqués.
+
+function _getAvailableMachines() {
+  if (typeof MACHINES === 'undefined') return {};
+  // Retourner uniquement les machines dont le Ti requis est atteint
+  const result = {};
+  for (const [id, def] of Object.entries(MACHINES)) {
+    const requiredTi = def.unlockTi || 0;
+    if (gameState.ti >= requiredTi && def.tiPerSec) {
+      result[id] = def;
+    }
+  }
+  return result;
+}
 
 // ─── Ressources qui peuvent "spawner" sur le terrain ───────
 const SPAWNABLE_ORES = [
@@ -132,6 +81,15 @@ function initTerraform(scene, getHeightAt) {
     if (e.code === 'KeyI') toggleInventory();
   });
 
+  // Initialiser le système d'événements météo
+  if (typeof EventSystem !== 'undefined') {
+    EventSystem.init(
+      gameState.ti,
+      (event) => _onEventStart(event),
+      () => _onEventEnd()
+    );
+  }
+
   console.log('✅ Terraform system initialized');
 }
 
@@ -146,7 +104,7 @@ function updateTerraform(delta, playerPos) {
 
   // Mettre à jour les stats à partir des machines
   for (const m of gameState.machines) {
-    const def = MACHINE_DEFS[m.type];
+    const def = (typeof MACHINES !== 'undefined' ? MACHINES[m.type] : null);
     if (!def) continue;
     if (def.oxygenRate)   gameState.oxygen   = Math.min(100, gameState.oxygen   + def.oxygenRate   * delta);
     if (def.heatRate)     gameState.heat     = Math.min(100, gameState.heat     + def.heatRate     * delta);
@@ -171,7 +129,7 @@ function updateTerraform(delta, playerPos) {
 //  MACHINES
 // ============================================================
 function buildMachine(type) {
-  const def = MACHINE_DEFS[type];
+  const def = (typeof MACHINES !== 'undefined' ? MACHINES[type] : null);
   if (!def) return;
 
   // Vérifier les ressources
@@ -220,14 +178,26 @@ function _placeMachine3D(type, def) {
 
   const geo = new THREE.BoxGeometry(1.5, 2, 1.5);
   const colors = {
-    'oxygen-pump':          0x4488ff,
-    'heater':               0xff4422,
-    'atmospheric-press':    0x8844ff,
-    'tree-spreader':        0x44bb44,
-    'solar-panel':          0xffcc00,
-    'biolab-station':       0x00ccaa,
-    'nuclear-reactor':      0x44ff44,
-    'atmospheric-condenser':0x0088ff,
+    heater_t1: 0xff4422, heater_t2: 0xff5533, heater_t3: 0xff6644,
+    heater_t4: 0xff7755, heater_t5: 0xff8866,
+    drill_t1: 0x886644, drill_t2: 0x997755, drill_t3: 0xaa8866,
+    drill_t4: 0xbb9977, drill_t5: 0xccaa88,
+    solar_t1: 0xffcc00, solar_t2: 0xffdd22,
+    wind_turbine_t1: 0x88ccff, wind_turbine_t2: 0x99ddff,
+    nuclear_t1: 0x44ff44, nuclear_t2: 0x66ff66,
+    fusion_generator: 0x00ffff,
+    vegetube_t1: 0x44aa44, vegetube_t2: 0x55bb55, vegetube_t3: 0x66cc66,
+    tree_spreader_t1: 0x228822, tree_spreader_t2: 0x33aa33, tree_spreader_t3: 0x44cc44,
+    grass_spreader: 0x88dd44, flower_spreader_t1: 0xff88cc, flower_spreader_t2: 0xff44aa,
+    algae_t1: 0x00ccaa, algae_t2: 0x00ddbb,
+    beehive_t1: 0xffcc44, beehive_t2: 0xffdd55,
+    butterfly_farm_t1: 0xff88ff, butterfly_farm_t2: 0xff66ff, butterfly_farm_t3: 0xff44ff,
+    fish_farm_t1: 0x4488cc, fish_farm_t2: 0x5599dd,
+    aquarium_t1: 0x2266aa, aquarium_t2: 0x3377bb,
+    amphibian_farm: 0x44aa66,
+    ore_extractor_t1: 0x885544, ore_extractor_t2: 0x996655, ore_extractor_t3: 0xaa7766,
+    gas_extractor_t1: 0x8888aa, gas_extractor_t2: 0x9999bb,
+    nuclear_reactor: 0x44ff44,
   };
   const mat  = new THREE.MeshLambertMaterial({ color: colors[type] || 0x888888 });
   const mesh = new THREE.Mesh(geo, mat);
@@ -476,7 +446,19 @@ function _renderCraftList() {
 
   list.innerHTML = '';
 
-  for (const [type, def] of Object.entries(MACHINE_DEFS)) {
+  // Utiliser MACHINES (machines.js) si disponible, sinon liste vide
+  const machineDefs = (typeof MACHINES !== 'undefined') ? MACHINES : {};
+  // Afficher les machines starter + celles débloquées par le Ti actuel
+  const starterList = (typeof STARTER_MACHINES !== 'undefined') ? STARTER_MACHINES : [];
+  const toShow = Object.keys(machineDefs).filter(id => {
+    const def = machineDefs[id];
+    if (!def.tiPerSec && !def.powerGen) return false; // pas de machines purement décoratives
+    const reqTi = def.unlockTi || 0;
+    return gameState.ti >= reqTi || starterList.includes(id);
+  });
+
+  for (const type of toShow) {
+    const def = machineDefs[type];
     const canAfford = Object.entries(def.cost).every(
       ([item, qty]) => (gameState.inventory[item] || 0) >= qty
     );
@@ -518,6 +500,82 @@ function _showNotif(msg, type = 'info') {
 }
 
 // ============================================================
+//  ÉVÉNEMENTS MÉTÉO
+// ============================================================
+function _onEventStart(event) {
+  _showNotif(`${event.icon} ${event.nameFr} !`, 'stage');
+
+  // Changer la couleur du ciel pendant l'événement
+  if (_scene && event.skyColor !== undefined) {
+    _scene.background = new THREE.Color(event.skyColor);
+    if (event.fogColor !== undefined) _scene.fog.color.setHex(event.fogColor);
+  }
+
+  // Événements météorites : spawner des ressources
+  if (event.type === 'meteor' && event.drops && _scene && _getHeightAt) {
+    const qty = event.dropQty
+      ? Math.floor(Math.random() * (event.dropQty.max - event.dropQty.min + 1)) + event.dropQty.min
+      : 5;
+    _spawnMeteorDrops(event.drops, qty);
+  }
+
+  // Afficher le nom de l'événement dans le HUD
+  const evEl = document.getElementById('hud-event');
+  if (evEl) {
+    evEl.textContent = `${event.icon} ${event.nameFr}`;
+    evEl.style.opacity = '1';
+  }
+}
+
+function _onEventEnd() {
+  // Restaurer la couleur du ciel du stade actuel
+  const stage = getCurrentStage(gameState.ti);
+  if (_scene) {
+    _scene.background = new THREE.Color(stage.skyColor);
+    _scene.fog.color.setHex(stage.fogColor);
+  }
+  const evEl = document.getElementById('hud-event');
+  if (evEl) evEl.style.opacity = '0';
+}
+
+function _spawnMeteorDrops(drops, totalQty) {
+  for (let i = 0; i < totalQty; i++) {
+    const itemId = drops[Math.floor(Math.random() * drops.length)];
+    const item   = (typeof ITEMS !== 'undefined') ? ITEMS[itemId] : null;
+
+    const x = (Math.random() - 0.5) * 100;
+    const z = (Math.random() - 0.5) * 100;
+    const y = _getHeightAt(x, z);
+
+    const scale  = 0.5 + Math.random() * 0.8;
+    const color  = item?.color ? parseInt(item.color.replace('#', '0x')) : 0xff6600;
+    const geo    = new THREE.DodecahedronGeometry(scale, 0);
+    const mat    = new THREE.MeshLambertMaterial({ color, emissive: color, emissiveIntensity: 0.3 });
+    const mesh   = new THREE.Mesh(geo, mat);
+    mesh.position.set(x, y + scale * 0.5 + 50, z);
+    mesh.userData = { isResource: true, itemId, quantity: 1 };
+    _scene.add(mesh);
+    resourceNodes.push(mesh);
+
+    // Animation de chute
+    const startY = y + scale * 0.5 + 50;
+    const targetY = y + scale * 0.5;
+    const fallDuration = 2000 + Math.random() * 1500;
+    const startTime = performance.now();
+
+    function animateFall() {
+      const t = Math.min(1, (performance.now() - startTime) / fallDuration);
+      mesh.position.y = startY + (targetY - startY) * (t * t);
+      mesh.rotation.y += 0.05;
+      if (t < 1) requestAnimationFrame(animateFall);
+    }
+    requestAnimationFrame(animateFall);
+  }
+
+  _showNotif(`☄️ Des ressources météorites ont atterri !`, 'collect');
+}
+
+// ============================================================
 //  PERSISTANCE (localStorage)
 // ============================================================
 function _saveInventory() {
@@ -537,11 +595,12 @@ function _loadInventory() {
     const mach = localStorage.getItem('pc_machines');
     if (mach) {
       const types = JSON.parse(mach);
+      const machineDefs = (typeof MACHINES !== 'undefined') ? MACHINES : {};
       for (const t of types) {
-        const def = MACHINE_DEFS[t];
+        const def = machineDefs[t];
         if (def) {
           gameState.machines.push({ type: t, id: Date.now() + Math.random() });
-          gameState.tiRate += def.tiPerSec;
+          gameState.tiRate += (def.tiPerSec || 0);
         }
       }
     }
