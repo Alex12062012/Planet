@@ -8,149 +8,338 @@
 </head>
 <body>
 
-  <!-- ===== CANVAS 3D ===== -->
+  <!-- ═══════════════ CANVAS 3D ═══════════════ -->
   <canvas id="game-canvas"></canvas>
 
-  <!-- ===== HUD TERRAFORMATION ===== -->
+  <!-- ═══════════════ HUD PRINCIPAL ═══════════════ -->
   <div id="hud">
     <div id="hud-title">🌍 TERRAFORMATION</div>
 
-    <!-- Ti Total -->
+    <!-- Ti -->
     <div id="hud-ti-row">
-      <span id="hud-ti-label">Index Ti :</span>
+      <span id="hud-ti-label">Ti :</span>
       <span id="hud-ti">0 Ti</span>
-      <span id="hud-ti-rate" class="hud-rate">0 Ti/s</span>
+      <span id="hud-ti-rate" class="hud-rate">0/s</span>
     </div>
 
-    <!-- Barres de paramètres -->
+    <!-- Barres atmosphériques -->
     <div class="hud-bar-row">
-      <span class="hud-icon">💨</span>
-      <span class="hud-label">Oxygène</span>
-      <div class="hud-bar-bg">
-        <div class="hud-bar oxygen-bar" id="bar-oxygen"></div>
-      </div>
+      <span class="hud-icon">💨</span><span class="hud-label">O₂</span>
+      <div class="hud-bar-bg"><div class="hud-bar oxygen-bar" id="bar-oxygen"></div></div>
       <span class="hud-value" id="val-oxygen">0%</span>
     </div>
-
     <div class="hud-bar-row">
-      <span class="hud-icon">🌡️</span>
-      <span class="hud-label">Chaleur</span>
-      <div class="hud-bar-bg">
-        <div class="hud-bar heat-bar" id="bar-heat"></div>
-      </div>
+      <span class="hud-icon">🌡️</span><span class="hud-label">Chaleur</span>
+      <div class="hud-bar-bg"><div class="hud-bar heat-bar" id="bar-heat"></div></div>
       <span class="hud-value" id="val-heat">0%</span>
     </div>
-
     <div class="hud-bar-row">
-      <span class="hud-icon">🌀</span>
-      <span class="hud-label">Pression</span>
-      <div class="hud-bar-bg">
-        <div class="hud-bar pressure-bar" id="bar-pressure"></div>
-      </div>
+      <span class="hud-icon">🌀</span><span class="hud-label">Pression</span>
+      <div class="hud-bar-bg"><div class="hud-bar pressure-bar" id="bar-pressure"></div></div>
       <span class="hud-value" id="val-pressure">0%</span>
     </div>
 
+    <!-- Biomasses séparées -->
+    <div class="hud-section-title">🌿 BIOMASSE</div>
     <div class="hud-bar-row">
-      <span class="hud-icon">🌿</span>
-      <span class="hud-label">Biomasse</span>
-      <div class="hud-bar-bg">
-        <div class="hud-bar biomass-bar" id="bar-biomass"></div>
-      </div>
-      <span class="hud-value" id="val-biomass">0%</span>
+      <span class="hud-icon">🌱</span><span class="hud-label">Plantes</span>
+      <div class="hud-bar-bg"><div class="hud-bar plants-bar" id="bar-plants"></div></div>
+      <span class="hud-value" id="val-plants">0%</span>
+    </div>
+    <div class="hud-bar-row">
+      <span class="hud-icon">🦋</span><span class="hud-label">Insectes</span>
+      <div class="hud-bar-bg"><div class="hud-bar insects-bar" id="bar-insects"></div></div>
+      <span class="hud-value" id="val-insects">0%</span>
+    </div>
+    <div class="hud-bar-row">
+      <span class="hud-icon">🐠</span><span class="hud-label">Animaux</span>
+      <div class="hud-bar-bg"><div class="hud-bar animals-bar" id="bar-animals"></div></div>
+      <span class="hud-value" id="val-animals">0%</span>
     </div>
 
-    <!-- Stade actuel -->
+    <!-- Stade -->
     <div id="hud-stage-block">
       <div id="hud-stage">Stade : <span id="stage-name">💀 Planète morte</span></div>
       <div id="stage-desc">La planète est totalement stérile.</div>
       <div id="hud-stage-progress">
-        <div id="stage-progress-track">
-          <div id="stage-progress-bar"></div>
-        </div>
+        <div id="stage-progress-track"><div id="stage-progress-bar"></div></div>
         <div id="stage-next"></div>
       </div>
     </div>
 
-    <!-- Machines -->
-    <div id="hud-machines-row">
-      ⚙️ <span id="hud-machines">0 machine(s)</span>
+    <!-- Power Grid -->
+    <div id="power-row" style="display:none">
+      <span class="power-label">⚡</span>
+      <span id="power-gen" class="power-ok">0W</span>
+      <span class="power-sep"> / </span>
+      <span id="power-use">0W</span>
+      <span class="power-balance-lbl"> Δ</span>
+      <span id="power-balance" class="power-ok">0W</span>
     </div>
 
-    <!-- Événement météo actif -->
+    <!-- Machines + Tokens + Blueprints -->
+    <div id="hud-footer">
+      <span>⚙️ <span id="hud-machines">0</span></span>
+      <span>💎 <span id="hud-tokens">0 TT</span></span>
+      <span>📋 <span id="hud-blueprints">0</span></span>
+    </div>
+
+    <!-- Événement météo -->
     <div id="hud-event-row">
       <span id="hud-event" style="opacity:0;transition:opacity 0.5s;"></span>
     </div>
   </div>
 
-  <!-- ===== INVENTAIRE (panneau latéral) ===== -->
+  <!-- ═══════════════ HUD SURVIE (droite haut) ═══════════════ -->
+  <div id="survival-hud">
+    <div class="hud-bar-row">
+      <span class="hud-icon">❤️</span><span class="hud-label">Santé</span>
+      <div class="hud-bar-bg"><div class="hud-bar health-bar" id="surv-bar-health"></div></div>
+      <span class="hud-value" id="surv-val-health">100%</span>
+    </div>
+    <div class="hud-bar-row">
+      <span class="hud-icon">💧</span><span class="hud-label">Hydrat.</span>
+      <div class="hud-bar-bg"><div class="hud-bar hydra-bar" id="surv-bar-hydration"></div></div>
+      <span class="hud-value" id="surv-val-hydration">100%</span>
+    </div>
+    <div class="hud-bar-row">
+      <span class="hud-icon">🫁</span><span class="hud-label">O₂ perso</span>
+      <div class="hud-bar-bg"><div class="hud-bar player-o2-bar" id="surv-bar-player-o2"></div></div>
+      <span class="hud-value" id="surv-val-player-o2">100%</span>
+    </div>
+    <div class="hud-bar-row">
+      <span class="hud-icon">☢️</span><span class="hud-label">Rad.</span>
+      <div class="hud-bar-bg"><div class="hud-bar rad-bar" id="surv-bar-radiation"></div></div>
+      <span class="hud-value" id="surv-val-radiation">0%</span>
+    </div>
+    <!-- Alertes danger -->
+    <div id="danger-o2-warn"    class="danger-warn" style="display:none">💨 ASPHYXIE !</div>
+    <div id="danger-hydra-warn" class="danger-warn" style="display:none">💧 DÉSHYDRATATION !</div>
+    <div id="danger-rad-warn"   class="danger-warn" style="display:none">☢️ RADIATION CRITIQUE !</div>
+  </div>
+
+  <!-- ═══════════════ JETPACK HUD ═══════════════ -->
+  <div id="jetpack-hud" style="display:none">
+    <span id="jetpack-status">✅ Sol</span>
+    <div class="hud-bar-bg" style="width:80px">
+      <div class="hud-bar jetpack-bar" id="jetpack-fuel-bar"></div>
+    </div>
+    <span id="jetpack-fuel-val">100%</span>
+  </div>
+
+  <!-- ═══════════════ POWER ALERT ═══════════════ -->
+  <div id="power-alert" style="display:none"></div>
+
+  <!-- ═══════════════ MINIMAP ═══════════════ -->
+  <div id="minimap-wrap">
+    <canvas id="minimap-canvas"></canvas>
+    <div id="minimap-label">Carte · M</div>
+  </div>
+
+  <!-- ═══════════════ INVENTAIRE ═══════════════ -->
   <div id="inventory">
     <div id="inv-header">
       <div id="inv-title">🎒 INVENTAIRE</div>
+      <span id="inv-capacity" class="inv-cap">0/10 slots</span>
       <button id="inv-close" onclick="toggleInventory()">✕</button>
     </div>
-    <div id="inv-grid">
-      <div class="inv-empty">Explorez pour collecter des ressources</div>
-    </div>
+    <div id="inv-grid"><div class="inv-empty">Explorez pour collecter</div></div>
   </div>
 
-  <!-- ===== PANNEAU CRAFT / MACHINES ===== -->
+  <!-- ═══════════════ CRAFT MACHINES ═══════════════ -->
   <div id="craft-panel" class="hidden">
     <div id="craft-header">
-      <div id="craft-title">🔧 CONSTRUIRE UNE MACHINE</div>
-      <button id="craft-close" onclick="toggleCraft()">✕ FERMER</button>
+      <div id="craft-title">⚙️ CONSTRUIRE</div>
+      <button id="craft-close" onclick="toggleCraft()">✕</button>
     </div>
-    <div id="craft-list">
-      <!-- Rempli dynamiquement par terraform.js -->
+    <div id="craft-list"></div>
+  </div>
+
+  <!-- ═══════════════ RECETTES ITEMS ═══════════════ -->
+  <div id="recipes-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">🔬 RECETTES DE CRAFT</div>
+      <div class="panel-controls">
+        <select id="recipe-filter" onchange="_renderRecipesPanel()">
+          <option value="all">Toutes</option>
+          <option value="basic">Craft de base</option>
+          <option value="advanced">Craft Station</option>
+          <option value="biolab">BioLab</option>
+        </select>
+        <button class="panel-close" onclick="toggleRecipesPanel()">✕</button>
+      </div>
+    </div>
+    <div id="recipes-list"></div>
+  </div>
+
+  <!-- ═══════════════ ÉQUIPEMENT ═══════════════ -->
+  <div id="equipment-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">🥼 ÉQUIPEMENT</div>
+      <button class="panel-close" onclick="Equipment.toggleEquipmentPanel()">✕</button>
+    </div>
+    <div id="equip-slots">
+      <div id="equip-slot-head"    class="equip-slot-row"></div>
+      <div id="equip-slot-suit"    class="equip-slot-row"></div>
+      <div id="equip-slot-backpack"class="equip-slot-row"></div>
+      <div id="equip-slot-boots"   class="equip-slot-row"></div>
+      <div id="equip-slot-jetpack" class="equip-slot-row"></div>
+    </div>
+    <div id="equip-stats-summary" class="equip-stats"></div>
+    <div class="panel-subtitle">Équiper depuis l'inventaire</div>
+    <div id="equippable-items"></div>
+  </div>
+
+  <!-- ═══════════════ BLUEPRINTS ═══════════════ -->
+  <div id="blueprints-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">📋 BLUEPRINTS</div>
+      <button class="panel-close" onclick="BlueprintsUI.toggleBlueprintPanel()">✕</button>
+    </div>
+    <div id="bp-summary" class="bp-summary-bar"></div>
+    <div id="bp-tabs" class="bp-tabs"></div>
+    <div id="bp-tab-header" class="bp-tab-header"></div>
+    <div id="bp-list" class="bp-list"></div>
+  </div>
+
+  <!-- ═══════════════ FUSÉES ═══════════════ -->
+  <div id="rocket-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">🚀 FUSÉES</div>
+      <button class="panel-close" onclick="Rockets.toggleRocketPanel()">✕</button>
+    </div>
+    <div id="rocket-list"></div>
+  </div>
+
+  <!-- ═══════════════ MARKETPLACE ═══════════════ -->
+  <div id="market-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">💹 MARCHÉ SPATIAL</div>
+      <div>💎 <span id="market-tokens-disp">0 TT</span></div>
+      <button class="panel-close" onclick="Marketplace.toggleMarketPanel()">✕</button>
+    </div>
+    <div id="market-tabs" class="market-tabs"></div>
+    <div class="market-split">
+      <div class="market-col">
+        <div class="market-col-title">🛒 Acheter</div>
+        <div id="market-buy-list"></div>
+      </div>
+      <div class="market-col">
+        <div class="market-col-title">💰 Vendre</div>
+        <div id="market-sell-list"></div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== NOTIFICATION ===== -->
+  <!-- ═══════════════ MICROCHIPS ═══════════════ -->
+  <div id="chip-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">📟 MICROCHIPS</div>
+      <button class="panel-close" onclick="Microchips.toggleChipPanel()">✕</button>
+    </div>
+    <div class="panel-subtitle">En cours de décodage</div>
+    <div id="chip-decoding"></div>
+    <div class="panel-subtitle">Chips disponibles</div>
+    <div id="chip-inventory"></div>
+    <div class="panel-subtitle">Blueprints débloqués via chips</div>
+    <div id="chip-unlocked" class="chip-unlocked-list"></div>
+  </div>
+
+  <!-- ═══════════════ DNA LAB ═══════════════ -->
+  <div id="dna-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">🧬 DNA LAB — INCUBATION</div>
+      <button class="panel-close" onclick="DNALab.toggleDNAPanel()">✕</button>
+    </div>
+    <div class="dna-slots-row">
+      <div id="dna-slot-0" class="dna-slot"></div>
+      <div id="dna-slot-1" class="dna-slot"></div>
+      <div id="dna-slot-2" class="dna-slot"></div>
+    </div>
+    <div id="dna-recipes"></div>
+  </div>
+
+  <!-- ═══════════════ GRANDE CARTE ═══════════════ -->
+  <div id="fullmap-panel" class="hidden">
+    <div class="panel-header">
+      <div class="panel-title">🗺️ CARTE</div>
+      <div id="map-coords" class="map-coords"></div>
+      <div id="map-reveal-pct" class="map-reveal"></div>
+      <button class="panel-close" onclick="MapSystem.toggleFullMap()">✕</button>
+    </div>
+    <canvas id="fullmap-canvas"></canvas>
+    <div class="map-legend">
+      <span>🏠 Shelter</span>
+      <span>🛸 Épave</span>
+      <span>⚙️ Machine</span>
+      <span>⬜ Joueur</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PLACEMENT MODE ═══════════════ -->
+  <div id="placement-indicator" style="display:none">
+    <span>🔧 Placement : </span>
+    <span id="placement-name"></span>
+    <span class="placement-hint"> · Clic = Poser · R = Rotation · Échap = Annuler</span>
+  </div>
+
+  <!-- ═══════════════ DEATH SCREEN ═══════════════ -->
+  <div id="death-screen" class="hidden">
+    <div id="death-content">
+      <div id="death-icon">💀</div>
+      <div id="death-message">Vous êtes mort...</div>
+      <div id="death-timer-wrap">Respawn au shelter dans <span id="death-timer">5</span>s</div>
+      <div id="death-hint">50% de l'inventaire perdu</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ NOTIFICATION ═══════════════ -->
   <div id="notif"></div>
 
-  <!-- ===== MIRE ===== -->
+  <!-- ═══════════════ MIRE + HINTS ═══════════════ -->
   <div id="crosshair">+</div>
+  <div id="interact-hint" class="hidden">E — Interagir</div>
 
-  <!-- ===== HINT TOUCHE E ===== -->
-  <div id="interact-hint" class="hidden">E — Ramasser</div>
-
-  <!-- ===== BARRE DU BAS ===== -->
+  <!-- ═══════════════ BARRE DU BAS ═══════════════ -->
   <div id="bottom-bar">
-    <span>ZQSD — Se déplacer</span>
-    <span>Souris — Regarder</span>
-    <span>E — Ramasser</span>
-    <span>B — Construire</span>
-    <span>I — Inventaire</span>
-    <span>Échap — Pause</span>
+    <span>ZQSD Mouvement</span>
+    <span>E Interagir</span>
+    <span>B Machines</span>
+    <span>F Recettes</span>
+    <span>I Inventaire</span>
+    <span>X Équipement</span>
+    <span>Tab Blueprints</span>
+    <span>R Fusées</span>
+    <span>T Marché</span>
+    <span>G DNA</span>
+    <span>K Chips</span>
+    <span>M Carte</span>
   </div>
 
-  <!-- ===== OVERLAY DÉMARRAGE ===== -->
+  <!-- ═══════════════ OVERLAY DÉMARRAGE ═══════════════ -->
   <div id="overlay" class="active">
     <div id="overlay-content">
       <div id="overlay-logo">🌍</div>
       <h1>THE PLANET CRAFTER</h1>
-      <p class="overlay-sub">Terraformez une planète hostile</p>
+      <p class="overlay-sub">Terraformez une planète hostile — Survivez, construisez, prospérez</p>
       <div id="overlay-steps">
-        <div class="step">💨 Produire de l'oxygène</div>
-        <div class="step">🌡️ Réchauffer la surface</div>
-        <div class="step">🌀 Augmenter la pression</div>
-        <div class="step">🌿 Faire naître la vie</div>
-        <div class="step">🌊 Former des océans</div>
-        <div class="step">🌲 Planter des forêts</div>
-        <div class="step">🌍 Terraformation complète</div>
-      </div>
-      <div id="overlay-stages-preview">
-        <div class="stage-preview">📊 15 stades de terraformation</div>
-        <div class="stage-preview">⛏️ 17 types de minerais à collecter</div>
-        <div class="stage-preview">🦋 20 variétés de papillons</div>
-        <div class="stage-preview">🐟 15 espèces de poissons</div>
-        <div class="stage-preview">🐸 17 espèces de grenouilles</div>
+        <div class="step">💨 O₂ + Survie réelle</div>
+        <div class="step">⚙️ 60+ machines</div>
+        <div class="step">🔬 Crafting complet</div>
+        <div class="step">🚀 18 types de fusées</div>
+        <div class="step">🦋 DNA / Incubation</div>
+        <div class="step">📟 Microchips</div>
+        <div class="step">🛸 Épaves & loot</div>
+        <div class="step">🗺️ GPS & carte</div>
+        <div class="step">💹 Terra Tokens</div>
+        <div class="step">📋 157 blueprints</div>
       </div>
       <button id="start-btn">▶ COMMENCER</button>
-      <p class="overlay-version">V2.0 — Planet Crafter</p>
+      <p class="overlay-version">V3.0 — Planet Crafter Recreation</p>
     </div>
   </div>
 
-  <!-- ===== BIBLIOTHÈQUES ===== -->
+  <!-- ═══════════════ SCRIPTS ═══════════════ -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <!-- Données -->
@@ -160,8 +349,22 @@
   <script src="js/data/buildings.js"></script>
   <script src="js/data/blueprints.js"></script>
   <script src="js/data/events.js"></script>
+  <script src="js/data/recipes.js"></script>
 
   <!-- Systèmes -->
+  <script src="js/survival.js"></script>
+  <script src="js/equipment.js"></script>
+  <script src="js/power.js"></script>
+  <script src="js/placement.js"></script>
+  <script src="js/rockets.js"></script>
+  <script src="js/blueprints_ui.js"></script>
+  <script src="js/marketplace.js"></script>
+  <script src="js/microchips.js"></script>
+  <script src="js/loot.js"></script>
+  <script src="js/dna.js"></script>
+  <script src="js/map.js"></script>
+
+  <!-- Jeu -->
   <script src="js/terraform.js"></script>
   <script src="js/terrain.js"></script>
   <script src="js/player.js"></script>
